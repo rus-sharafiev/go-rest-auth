@@ -1,20 +1,30 @@
 package auth
 
-import "net/http"
+import (
+	"net/http"
+)
 
-func authHandler() *http.ServeMux {
+type controller struct {
+}
+
+func (c controller) Register(args ...string) *http.ServeMux {
 	authRouter := http.NewServeMux()
 
-	authRouter.Handle("/api/auth/signup", SignUp)
-	authRouter.Handle("/api/auth/signup/verify", VerifySignup)
-	authRouter.Handle("/api/auth/login", LogIn)
-	authRouter.Handle("/api/auth/logout", LogOut)
-	authRouter.Handle("/api/auth/user", GetAuthUser)
-	authRouter.Handle("/api/auth/refresh", Refresh)
-	authRouter.Handle("/api/auth/password/reset", ResetPassword)
-	authRouter.Handle("/api/auth/password/update", UpdatePassword)
+	prefix := ""
+	if len(args) == 1 && len(args[0]) != 0 {
+		prefix = args[0]
+	}
+
+	authRouter.Handle(prefix+"/signup", SignUp)
+	authRouter.Handle(prefix+"/signup/verify", VerifySignup)
+	authRouter.Handle(prefix+"/login", LogIn)
+	authRouter.Handle(prefix+"/logout", LogOut)
+	authRouter.Handle(prefix+"/user", GetAuthUser)
+	authRouter.Handle(prefix+"/refresh", Refresh)
+	authRouter.Handle(prefix+"/password/reset", ResetPassword)
+	authRouter.Handle(prefix+"/password/update", UpdatePassword)
 
 	return authRouter
 }
 
-var Controller = authHandler()
+var Controller = &controller{}

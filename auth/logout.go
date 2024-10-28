@@ -14,6 +14,8 @@ type logOut struct {
 }
 
 func (c logOut) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+
 	if r.Method != http.MethodGet {
 		exception.MethodNotAllowed(w)
 		return
@@ -27,7 +29,7 @@ func (c logOut) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Delete session
 	if fingerprint := r.Header.Get("Fingerprint"); len(fingerprint) != 0 {
-		query := `DELETE FROM sessions WHERE "fingerprint" = $1;`
+		query := `DELETE FROM "Session" WHERE "fingerprint" = $1;`
 		if _, err := c.db.Query(&query, fingerprint); err != nil {
 			exception.InternalServerError(w, err)
 			return

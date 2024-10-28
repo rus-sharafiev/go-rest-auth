@@ -12,6 +12,8 @@ type getAuthUser struct {
 }
 
 func (c getAuthUser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+
 	if r.Method != http.MethodGet {
 		exception.MethodNotAllowed(w)
 		return
@@ -27,7 +29,7 @@ func (c getAuthUser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		SELECT row_to_json(row)
 		FROM (
 			SELECT *
-			FROM users u
+			FROM "User" u
 			WHERE u."id" = $1
 		) row;
 	`

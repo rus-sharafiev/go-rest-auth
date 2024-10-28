@@ -15,6 +15,8 @@ type refresh struct {
 }
 
 func (c refresh) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+
 	if r.Method != http.MethodGet {
 		exception.MethodNotAllowed(w)
 		return

@@ -28,6 +28,8 @@ type resetPassword struct {
 }
 
 func (c resetPassword) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+
 	if r.Method != http.MethodPost {
 		exception.MethodNotAllowed(w)
 		return
@@ -39,7 +41,7 @@ func (c resetPassword) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		userId     int
 		userAccess string
 	)
-	checkEmailQuery := `SELECT "id", "access" FROM users WHERE "email" = $1`
+	checkEmailQuery := `SELECT "id", "access" FROM "User" WHERE "email" = $1`
 	if err := c.db.QueryRow(&checkEmailQuery, &resetPasswordDto.Email).Scan(&userId, &userAccess); err != nil {
 		if err == pgx.ErrNoRows {
 			exception.BadRequestFields(w, map[string]string{
@@ -117,6 +119,8 @@ type updatePassword struct {
 }
 
 func (c updatePassword) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+
 	if r.Method != http.MethodPost {
 		exception.MethodNotAllowed(w)
 		return
@@ -180,7 +184,7 @@ func (c updatePassword) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	hashedPassword.WriteString(base64.StdEncoding.EncodeToString(salt))
 
 	updatePasswordQuery := `
-			UPDATE passwords SET "passwordHash" = $2
+			UPDATE "Password" SET "passwordHash" = $2
 			WHERE "userId" = $1;
 	`
 	if _, err := c.db.Query(&updatePasswordQuery, &claims.UserId, hashedPassword.String()); err != nil {

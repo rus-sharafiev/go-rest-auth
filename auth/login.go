@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/jackc/pgx/v5"
+	common "github.com/rus-sharafiev/go-rest-common"
 	"github.com/rus-sharafiev/go-rest-common/db"
 	"github.com/rus-sharafiev/go-rest-common/exception"
 	"github.com/rus-sharafiev/go-rest-common/jwt"
@@ -20,6 +21,8 @@ type logIn struct {
 }
 
 func (c logIn) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+
 	if r.Method != http.MethodPost {
 		exception.MethodNotAllowed(w)
 		return
@@ -30,8 +33,8 @@ func (c logIn) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var userPswd UserPswd
 	pswdQuery := `
 		SELECT u."id", p."passwordHash"
-		FROM users u
-		LEFT JOIN passwords p
+		FROM "User" u
+		LEFT JOIN "Password" p
 		ON u."id" = p."userId"
 		WHERE u."email" = $1;
 	`
@@ -70,7 +73,7 @@ func (c logIn) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := `SELECT * FROM users WHERE "id" = $1;`
+	query := `SELECT * FROM "User" WHERE "id" = $1;`
 	rows, _ := c.db.Query(&query, userPswd.UserId)
 	userData, err := pgx.CollectOneRow(rows, pgx.RowToStructByPos[UserData])
 	if err != nil {
@@ -95,13 +98,13 @@ func (c logIn) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if Config.RefreshCookiePath != nil {
+	if common.Config.RefreshCookiePath != nil {
 
 		// Set cookie with refresh token
 		cookie := &http.Cookie{
 			Name:   "refresh-token",
 			Value:  "Bearer " + refreshToken,
-			Path:   *Config.RefreshCookiePath,
+			Path:   *common.Config.RefreshCookiePath,
 			MaxAge: 0,
 		}
 		http.SetCookie(w, cookie)
@@ -115,7 +118,7 @@ func (c logIn) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if fingerprint := r.Header.Get("Fingerprint"); len(fingerprint) != 0 {
 
 		query := `
-			INSERT INTO sessions ("userId", "fingerprint", "userAgent", "ip", "updatedAt") 
+			INSERT INTO "Session" ("userId", "fingerprint", "userAgent", "ip", "updatedAt") 
 			VALUES (@userId, @fingerprint, @userAgent, @ip, CURRENT_TIMESTAMP)
 			ON CONFLICT ("fingerprint") DO 
 				UPDATE SET ("userId", "userAgent", "ip", "updatedAt") = 

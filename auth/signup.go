@@ -31,6 +31,8 @@ type signUp struct {
 }
 
 func (c signUp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+
 	if r.Method != http.MethodPost {
 		exception.MethodNotAllowed(w)
 		return
@@ -80,7 +82,7 @@ func (c signUp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	checkEmailQuery := `SELECT "id" FROM users WHERE "email" = $1`
+	checkEmailQuery := `SELECT "id" FROM "User" WHERE "email" = $1`
 	if err := c.db.QueryRow(&checkEmailQuery, signUpDto.Email).Scan(); err != pgx.ErrNoRows {
 		exception.BadRequestFields(w, map[string]string{
 			"email": localization.SelectString(r, localization.Langs{
@@ -163,6 +165,8 @@ type verifySignup struct {
 }
 
 func (c verifySignup) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+
 	if r.Method != http.MethodPost {
 		exception.MethodNotAllowed(w)
 		return
@@ -230,11 +234,11 @@ func (c verifySignup) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	createUserQuery := `
 		WITH u AS (
-			INSERT INTO users ("email")
+			INSERT INTO "User" ("email")
 			VALUES ($1)
 			RETURNING *
 		), p AS (
-			INSERT INTO passwords ("userId", "passwordHash")
+			INSERT INTO "Password" ("userId", "passwordHash")
 			SELECT u."id", $2
 			FROM u
 		)
@@ -264,13 +268,13 @@ func (c verifySignup) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if Config.RefreshCookiePath != nil {
+	if common.Config.RefreshCookiePath != nil {
 
 		// Set cookie with refresh token
 		cookie := &http.Cookie{
 			Name:   "refresh-token",
 			Value:  "Bearer " + refreshToken,
-			Path:   *Config.RefreshCookiePath,
+			Path:   *common.Config.RefreshCookiePath,
 			MaxAge: 0,
 		}
 		http.SetCookie(w, cookie)
