@@ -3,6 +3,7 @@ package auth
 import (
 	"net/http"
 
+	"github.com/rus-sharafiev/go-rest-common/auth"
 	"github.com/rus-sharafiev/go-rest-common/db"
 	"github.com/rus-sharafiev/go-rest-common/exception"
 )
@@ -19,7 +20,7 @@ func (c getAuthUser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, _ := Headers(r)
+	userId, _ := auth.Headers(r)
 	if len(userId) == 0 {
 		exception.Unauthorized(w)
 		return
