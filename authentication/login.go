@@ -1,4 +1,4 @@
-package auth
+package authentication
 
 import (
 	"crypto/sha1"
@@ -9,24 +9,15 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	common "github.com/rus-sharafiev/go-rest-common"
-	"github.com/rus-sharafiev/go-rest-common/db"
 	"github.com/rus-sharafiev/go-rest-common/exception"
 	"github.com/rus-sharafiev/go-rest-common/jwt"
 	"github.com/rus-sharafiev/go-rest-common/localization"
 	"golang.org/x/crypto/pbkdf2"
 )
 
-type logIn struct {
-	db *db.Postgres
-}
-
-func (c logIn) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (c *controller) logIn(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 
-	if r.Method != http.MethodPost {
-		exception.MethodNotAllowed(w)
-		return
-	}
 	var logInDto LogInDto
 	json.NewDecoder(r.Body).Decode(&logInDto)
 
@@ -140,5 +131,3 @@ func (c logIn) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// OK response
 	json.NewEncoder(w).Encode(&result)
 }
-
-var LogIn = &logIn{db: &db.Instance}

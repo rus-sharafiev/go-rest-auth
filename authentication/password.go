@@ -1,4 +1,4 @@
-package auth
+package authentication
 
 import (
 	"context"
@@ -14,7 +14,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/redis/go-redis/v9"
-	"github.com/rus-sharafiev/go-rest-common/db"
 	"github.com/rus-sharafiev/go-rest-common/exception"
 	"github.com/rus-sharafiev/go-rest-common/jwt"
 	"github.com/rus-sharafiev/go-rest-common/localization"
@@ -23,17 +22,9 @@ import (
 )
 
 // -- Reset -----------------------------------------------------------------------
-type resetPassword struct {
-	db *db.Postgres
-}
-
-func (c resetPassword) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (c *controller) resetPassword(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 
-	if r.Method != http.MethodPost {
-		exception.MethodNotAllowed(w)
-		return
-	}
 	var resetPasswordDto ResetPasswordDto
 	json.NewDecoder(r.Body).Decode(&resetPasswordDto)
 
@@ -111,20 +102,9 @@ func (c resetPassword) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&successMessage)
 }
 
-var ResetPassword = &resetPassword{db: &db.Instance}
-
 // -- Update ----------------------------------------------------------------------
-type updatePassword struct {
-	db *db.Postgres
-}
-
-func (c updatePassword) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (c controller) updatePassword(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
-
-	if r.Method != http.MethodPost {
-		exception.MethodNotAllowed(w)
-		return
-	}
 
 	var updatePasswordDto UpdatePasswordDto
 	json.NewDecoder(r.Body).Decode(&updatePasswordDto)
@@ -202,5 +182,3 @@ func (c updatePassword) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(&successMessage)
 }
-
-var UpdatePassword = &updatePassword{db: &db.Instance}
