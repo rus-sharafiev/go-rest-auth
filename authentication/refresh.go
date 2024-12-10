@@ -1,26 +1,16 @@
-package auth
+package authentication
 
 import (
 	"encoding/json"
 	"net/http"
 	"strings"
 
-	"github.com/rus-sharafiev/go-rest-common/db"
 	"github.com/rus-sharafiev/go-rest-common/exception"
 	"github.com/rus-sharafiev/go-rest-common/jwt"
 )
 
-type refresh struct {
-	db *db.Postgres
-}
-
-func (c refresh) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (c *controller) refresh(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
-
-	if r.Method != http.MethodGet {
-		exception.MethodNotAllowed(w)
-		return
-	}
 
 	// Get refresh token from cookie
 	refreshTokenCookie, err := r.Cookie("refresh-token")
@@ -52,5 +42,3 @@ func (c refresh) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// OK response
 	json.NewEncoder(w).Encode(&result)
 }
-
-var Refresh = &refresh{db: &db.Instance}

@@ -1,4 +1,4 @@
-package auth
+package authentication
 
 import (
 	"context"
@@ -17,7 +17,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/redis/go-redis/v9"
 	common "github.com/rus-sharafiev/go-rest-common"
-	"github.com/rus-sharafiev/go-rest-common/db"
 	"github.com/rus-sharafiev/go-rest-common/exception"
 	"github.com/rus-sharafiev/go-rest-common/jwt"
 	"github.com/rus-sharafiev/go-rest-common/localization"
@@ -26,17 +25,9 @@ import (
 )
 
 // -- Sign Up ---------------------------------------------------------------------
-type signUp struct {
-	db *db.Postgres
-}
 
-func (c signUp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (c *controller) signUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
-
-	if r.Method != http.MethodPost {
-		exception.MethodNotAllowed(w)
-		return
-	}
 
 	var signUpDto SignUpDto
 	json.NewDecoder(r.Body).Decode(&signUpDto)
@@ -157,20 +148,9 @@ func (c signUp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&successMessage)
 }
 
-var SignUp = &signUp{db: &db.Instance}
-
 // -- Verify Signup ---------------------------------------------------------------
-type verifySignup struct {
-	db *db.Postgres
-}
-
-func (c verifySignup) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (c controller) verifySignup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
-
-	if r.Method != http.MethodPost {
-		exception.MethodNotAllowed(w)
-		return
-	}
 
 	var signUpCode SignUpCode
 	json.NewDecoder(r.Body).Decode(&signUpCode)
@@ -288,5 +268,3 @@ func (c verifySignup) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// OK response
 	json.NewEncoder(w).Encode(&result)
 }
-
-var VerifySignup = &verifySignup{db: &db.Instance}

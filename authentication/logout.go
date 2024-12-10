@@ -1,27 +1,17 @@
-package auth
+package authentication
 
 import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/rus-sharafiev/go-rest-common/db"
+	"github.com/rus-sharafiev/go-rest-common/auth"
 	"github.com/rus-sharafiev/go-rest-common/exception"
 	"github.com/rus-sharafiev/go-rest-common/localization"
 )
 
-type logOut struct {
-	db *db.Postgres
-}
-
-func (c logOut) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (c *controller) logOut(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
-
-	if r.Method != http.MethodGet {
-		exception.MethodNotAllowed(w)
-		return
-	}
-
-	userId, _ := Headers(r)
+	userId, _ := auth.Headers(r)
 	if len(userId) == 0 {
 		exception.Unauthorized(w)
 		return
@@ -56,5 +46,3 @@ func (c logOut) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// OK response
 	json.NewEncoder(w).Encode(&successMessage)
 }
-
-var LogOut = &logOut{db: &db.Instance}
