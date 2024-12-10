@@ -82,7 +82,7 @@ func (c signUp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	checkEmailQuery := `SELECT "id" FROM "User" WHERE "email" = $1`
+	checkEmailQuery := `SELECT id FROM users WHERE email = $1`
 	if err := c.db.QueryRow(&checkEmailQuery, signUpDto.Email).Scan(); err != pgx.ErrNoRows {
 		exception.BadRequestFields(w, map[string]string{
 			"email": localization.SelectString(r, localization.Langs{
@@ -234,12 +234,12 @@ func (c verifySignup) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	createUserQuery := `
 		WITH u AS (
-			INSERT INTO "User" ("email")
+			INSERT INTO users (email)
 			VALUES ($1)
 			RETURNING *
 		), p AS (
-			INSERT INTO "Password" ("userId", "passwordHash")
-			SELECT u."id", $2
+			INSERT INTO passwords (user_id, password_hash)
+			SELECT u.id, $2
 			FROM u
 		)
 		SELECT * FROM u; 

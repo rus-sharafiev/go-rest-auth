@@ -29,8 +29,8 @@ func (c getAuthUser) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		SELECT row_to_json(row)
 		FROM (
 			SELECT *
-			FROM "User" u
-			WHERE u."id" = $1
+			FROM users u
+			WHERE u.id = $1
 		) row;
 	`
 	c.db.WriteJsonString(w, &query, userId)

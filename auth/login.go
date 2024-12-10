@@ -32,11 +32,11 @@ func (c logIn) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	var userPswd UserPswd
 	pswdQuery := `
-		SELECT u."id", p."passwordHash"
-		FROM "User" u
-		LEFT JOIN "Password" p
-		ON u."id" = p."userId"
-		WHERE u."email" = $1;
+		SELECT u.id, p.password_hash
+		FROM users u
+		LEFT JOIN passwords p
+		ON u.id = p.user_id
+		WHERE u.email = $1;
 	`
 	if err := c.db.QueryRow(&pswdQuery, logInDto.Email).Scan(&userPswd.UserId, &userPswd.PasswordHash); err != nil {
 		if err == pgx.ErrNoRows {
@@ -73,7 +73,7 @@ func (c logIn) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := `SELECT * FROM "User" WHERE "id" = $1;`
+	query := `SELECT * FROM users WHERE id = $1;`
 	rows, _ := c.db.Query(&query, userPswd.UserId)
 	userData, err := pgx.CollectOneRow(rows, pgx.RowToStructByPos[UserData])
 	if err != nil {
@@ -118,11 +118,11 @@ func (c logIn) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if fingerprint := r.Header.Get("Fingerprint"); len(fingerprint) != 0 {
 
 		query := `
-			INSERT INTO "Session" ("userId", "fingerprint", "userAgent", "ip", "updatedAt") 
+			INSERT INTO sessions (user_id, fingerprint, user_agent, ip, updated_at) 
 			VALUES (@userId, @fingerprint, @userAgent, @ip, CURRENT_TIMESTAMP)
-			ON CONFLICT ("fingerprint") DO 
-				UPDATE SET ("userId", "userAgent", "ip", "updatedAt") = 
-				(EXCLUDED."userId", EXCLUDED."userAgent", EXCLUDED."ip", EXCLUDED."updatedAt");
+			ON CONFLICT (fingerprint) DO 
+				UPDATE SET (user_id, user_agent, ip, updated_at) = 
+				(EXCLUDED.user_id, EXCLUDED.user_agent, EXCLUDED.ip, EXCLUDED.updated_at);
 		`
 		args := pgx.NamedArgs{
 			"userId":      userData.ID,
