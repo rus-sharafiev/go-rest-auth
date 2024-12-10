@@ -19,7 +19,7 @@ func (c *controller) getAuthUser(w http.ResponseWriter, r *http.Request) {
 		SELECT row_to_json(row)
 		FROM (
 			SELECT *
-			FROM "User" u
+			FROM users u
 			WHERE u."id" = $1
 		) row;
 	`
